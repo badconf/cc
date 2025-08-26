@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cohérence Cardiaque</title>
+    <meta name="robots" content="noindex, nofollow" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+        }
+        
+        .container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .title {
+            position: absolute;
+            top: 30px;
+            font-size: 1.8rem;
+            font-weight: 300;
+            letter-spacing: 2px;
+            text-align: center;
+            opacity: 0.8;
+        }
+        
+        .instructions {
+            position: absolute;
+            top: 80px;
+            font-size: 1rem;
+            text-align: center;
+            opacity: 0.7;
+            max-width: 90%;
+        }
+        
+        .canvas-container {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+        }
+        
+        canvas {
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        
+        .phase-indicator {
+            position: absolute;
+            bottom: 80px;
+            font-size: 1.5rem;
+            font-weight: 500;
+            text-align: center;
+            padding: 15px 30px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 25px;
+            backdrop-filter: blur(10px);
+            transition: all 0.5s ease;
+        }
+        
+        .inspire {
+            background: rgba(76, 175, 80, 0.3);
+            color: #a8f5aa;
+        }
+        
+        .expire {
+            background: rgba(33, 150, 243, 0.3);
+            color: #a8d8f5;
+        }
+        
+        @media (max-width: 768px) {
+            .title {
+                font-size: 1.4rem;
+                top: 20px;
+            }
+            
+            .instructions {
+                font-size: 0.9rem;
+                top: 60px;
+            }
+            
+            .phase-indicator {
+                bottom: 40px;
+                font-size: 1.2rem;
+                padding: 10px 20px;
+            }
+            
+            canvas {
+                margin: 20px;
+            }
+        }
+    </style>
+    <!-- Pour les appareils Apple -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="./favicon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    
+    <link rel="canonical" href="https://fosse.fr/cc.html" />
+    <link rel="alternate" hreflang="fr" href="https://fosse.fr/cc.html" />
+    <link rel="alternate" hreflang="x-default" href="https://fosse.fr/cc.html" />
+</head>
+<body>
+    <div class="container">
+        <div class="title">Cohérence Cardiaque</div>
+        <div class="instructions">Suivez le point avec votre respiration : montée = inspiration, descente = expiration</div>
+        
+        <div class="canvas-container">
+            <canvas id="breathingCanvas"></canvas>
+        </div>
+        
+        <div id="phaseIndicator" class="phase-indicator inspire">INSPIREZ</div>
+    </div>
+
+    <script>
+        class CoherenceCardiaque {
+            constructor() {
+                this.canvas = document.getElementById('breathingCanvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.phaseIndicator = document.getElementById('phaseIndicator');
+                
+                this.setupCanvas();
+                this.initializeVariables();
+                this.setupEventListeners();
+                this.animate();
+            }
+            
+            setupCanvas() {
+                // Adaptation responsive
+                const containerWidth = window.innerWidth - 40;
+                const containerHeight = window.innerHeight - 200;
+                
+                this.canvas.width = Math.min(containerWidth, 800);
+                this.canvas.height = Math.min(containerHeight, 400);
+                
+                // Centrage du repère
+                this.centerX = this.canvas.width / 2;
+                this.centerY = this.canvas.height / 2;
+                
+                // Dimensions de la sinusoïde
+                this.amplitude = Math.min(this.canvas.height * 0.3, 120);
+                this.waveWidth = Math.min(this.canvas.width * 0.8, 600);
+                this.wavelength = this.waveWidth / 2; // Une demi-période visible
+            }
+            
+            initializeVariables() {
+                this.time = 0;
+                this.cycleDuration = 10000; // 10 secondes par cycle (5s montée + 5s descente)
+                this.lastTimestamp = 0;
+                this.offset = 0;
+            }
+            
+            setupEventListeners() {
+                window.addEventListener('resize', () => {
+                    this.setupCanvas();
+                });
+            }
+            
+            drawAxes() {
+                this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+                this.ctx.lineWidth = 1;
+                
+                // Axe horizontal
+                this.ctx.beginPath();
+                this.ctx.moveTo(this.centerX - this.waveWidth/2, this.centerY);
+                this.ctx.lineTo(this.centerX + this.waveWidth/2, this.centerY);
+                this.ctx.stroke();
+                
+                // Axe vertical
+                this.ctx.beginPath();
+                this.ctx.moveTo(this.centerX, this.centerY - this.amplitude - 20);
+                this.ctx.lineTo(this.centerX, this.centerY + this.amplitude + 20);
+                this.ctx.stroke();
+            }
+            
+            drawSineCurve() {
+                this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
+                this.ctx.lineWidth = 3;
+                this.ctx.beginPath();
+                
+                const startX = this.centerX - this.waveWidth/2;
+                const endX = this.centerX + this.waveWidth/2;
+                
+                for (let x = startX; x <= endX; x += 2) {
+                    const relativeX = (x - startX) / this.waveWidth;
+                    const phase = (relativeX * 2 * Math.PI) + this.offset;
+                    const y = this.centerY - Math.sin(phase) * this.amplitude;
+                    
+                    if (x === startX) {
+                        this.ctx.moveTo(x, y);
+                    } else {
+                        this.ctx.lineTo(x, y);
+                    }
+                }
+                
+                this.ctx.stroke();
+            }
+            
+            drawBreathingPoint() {
+                // Position fixe du point sur l'axe des ordonnées (centre X)
+                const pointX = this.centerX;
+                
+                // Position Y exactement sur la sinusoïde au centre de l'écran
+                // On calcule la valeur de la sinusoïde à la position centrale
+                const relativeX = 0.5; // Position centrale sur la largeur de l'onde
+                const sinePhase = (relativeX * 2 * Math.PI) + this.offset;
+                const pointY = this.centerY - Math.sin(sinePhase) * this.amplitude;
+                
+                // Détermination de la phase respiratoire basée sur la dérivée de la sinusoïde
+                const cosineValue = Math.cos(sinePhase);
+                
+                // On inspire quand on monte (dérivée positive), on expire quand on descend (dérivée négative)
+                const isInspiring = cosineValue > 0;
+                
+                // Mise à jour de l'indicateur de phase
+                if (isInspiring) {
+                    this.phaseIndicator.textContent = 'INSPIREZ';
+                    this.phaseIndicator.className = 'phase-indicator inspire';
+                } else {
+                    this.phaseIndicator.textContent = 'EXPIREZ';
+                    this.phaseIndicator.className = 'phase-indicator expire';
+                }
+                
+                // Dessin du point principal
+                this.ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+                this.ctx.strokeStyle = isInspiring ? '#4CAF50' : '#2196F3';
+                this.ctx.lineWidth = 4;
+                
+                this.ctx.beginPath();
+                this.ctx.arc(pointX, pointY, 12, 0, 2 * Math.PI);
+                this.ctx.fill();
+                this.ctx.stroke();
+                
+                // Effet de pulsation
+                const cycleProgress = (this.time % this.cycleDuration) / this.cycleDuration;
+                const breathingPhase = cycleProgress * 2 * Math.PI;
+                const pulseIntensity = 0.3 + 0.2 * Math.sin(breathingPhase * 2);
+                this.ctx.fillStyle = `rgba(255, 255, 255, ${pulseIntensity})`;
+                this.ctx.beginPath();
+                this.ctx.arc(pointX, pointY, 20, 0, 2 * Math.PI);
+                this.ctx.fill();
+            }
+            
+            animate(timestamp = 0) {
+                if (this.lastTimestamp === 0) {
+                    this.lastTimestamp = timestamp;
+                }
+                
+                const deltaTime = timestamp - this.lastTimestamp;
+                this.time += deltaTime;
+                this.lastTimestamp = timestamp;
+                
+                // Défilement continu de la courbe
+                // Vitesse ajustée pour un cycle complet (2π) en 10 secondes
+                this.offset += deltaTime * (2 * Math.PI / this.cycleDuration);
+                
+                // Nettoyage du canvas
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                
+                // Dessin des éléments
+                this.drawAxes();
+                this.drawSineCurve();
+                this.drawBreathingPoint();
+                
+                requestAnimationFrame((ts) => this.animate(ts));
+            }
+        }
+        
+        // Initialisation une fois le DOM chargé
+        document.addEventListener('DOMContentLoaded', () => {
+            new CoherenceCardiaque();
+        });
+    </script>
+</body>
+</html>
