@@ -1,10 +1,10 @@
-# Cohérence Cardiaque
+# Respiration 365
 
-Une application web simple et élégante pour pratiquer la cohérence cardiaque, technique de respiration basée sur la synchronisation du rythme cardiaque avec la respiration.
+Une interface web simple et élégante pour pratiquer la respiration 365, technique de cohérence cardiaque basée sur la synchronisation du rythme cardiaque avec la respiration.
 
 ## 📖 Description
 
-Cette application propose un guide visuel interactif pour la pratique de la cohérence cardiaque selon le protocole standard : **5 secondes d'inspiration, 5 secondes d'expiration**, soit 6 respirations par minute.
+Cette page propose un guide visuel interactif pour la pratique de la cohérence cardiaque selon le protocole standard : **5 secondes d'inspiration, 5 secondes d'expiration**, soit 6 respirations par minute.
 
 L'interface présente une courbe sinusoïdale animée avec un point de repère qui monte et descend de façon fluide. L'utilisateur suit simplement ce mouvement :
 - **Montée du point** = **Inspiration**
@@ -29,14 +29,16 @@ La cohérence cardiaque est une technique de respiration qui :
 - Favorise un meilleur sommeil
 - Renforce le système immunitaire
 
+Ces bénéfices restent à nuancer (voir l'article de l'[INSERM](https://presse.inserm.fr/canal-detox/la-coherence-cardiaque-une-technique-pour-ameliorer-sa-sante-vraiment/)).
+
 ## 🚀 Utilisation
 
 ### En ligne
-Accédez directement à l'application via votre navigateur : [URL de votre choix]
+Accédez directement à l'interface via votre navigateur : [URL de votre choix]
 
 ### En local
 1. Clonez ou téléchargez le repository
-2. Ouvrez le fichier `cc.html` dans votre navigateur
+2. Ouvrez le fichier `365.html` dans votre navigateur
 3. Commencez votre session de cohérence cardiaque
 
 ### Instructions d'utilisation
