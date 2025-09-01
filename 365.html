@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cohérence Cardiaque</title>
-    <meta name="robots" content="noindex, nofollow" />
+    <title>Respiration 365 et cohérence cardiaque</title>
+    <meta name="robots" content="index, nofollow" />
     <style>
         * {
             margin: 0;
@@ -14,7 +14,7 @@
         
         body {
             font-family: 'Arial', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #e5d68b 0%, #8a8234 100%);
             height: 100vh;
             overflow: hidden;
             display: flex;
@@ -52,12 +52,36 @@
             max-width: 90%;
         }
         
+        .timer {
+            position: absolute;
+            top: 120px;
+            font-size: 2rem;
+            font-weight: 500;
+            font-family: 'Courier New', monospace;
+            text-align: center;
+            color: white;
+            transition: color 0.5s ease;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+        
+        .timer.minute-mark {
+            color: #4CAF50;
+            animation: minuteGlow 1s ease-in-out;
+        }
+        
+        @keyframes minuteGlow {
+            0% { text-shadow: 0 0 10px rgba(255, 255, 255, 0.5); }
+            50% { text-shadow: 0 0 20px #4CAF50, 0 0 30px #4CAF50; }
+            100% { text-shadow: 0 0 10px rgba(255, 255, 255, 0.5); }
+        }
+        
         .canvas-container {
             flex: 1;
             display: flex;
             justify-content: center;
             align-items: center;
             width: 100%;
+            margin-top: 60px;
         }
         
         canvas {
@@ -113,6 +137,15 @@
                 top: 60px;
             }
             
+            .timer {
+                top: 90px;
+                font-size: 1.6rem;
+            }
+            
+            .canvas-container {
+                margin-top: 40px;
+            }
+            
             .phase-indicator {
                 bottom: 60px;
                 font-size: 1.2rem;
@@ -148,6 +181,7 @@
     <div class="container">
         <div class="title">La respiration 365</div>
         <div class="instructions">3 fois par jour, 6 respirations par minute, pendant 5 minutes</div>
+        <div id="timer" class="timer">00:00</div>
         
         <div class="canvas-container">
             <canvas id="breathingCanvas"></canvas>
@@ -156,8 +190,9 @@
         <div id="phaseIndicator" class="phase-indicator inspire">INSPIREZ</div>
         
         <div class="license-notice">
-            Code source libre<br>
-            Licence BSD-3-Clause
+            Code source libre<br/>
+            Licence BSD-3-Clause<br/>
+            <a href="https://github.com/badconf/r365">GitHub</a>
         </div>
     </div>
 
@@ -167,6 +202,7 @@
                 this.canvas = document.getElementById('breathingCanvas');
                 this.ctx = this.canvas.getContext('2d');
                 this.phaseIndicator = document.getElementById('phaseIndicator');
+                this.timerElement = document.getElementById('timer');
                 
                 this.setupCanvas();
                 this.initializeVariables();
@@ -177,7 +213,7 @@
             setupCanvas() {
                 // Adaptation responsive
                 const containerWidth = window.innerWidth - 40;
-                const containerHeight = window.innerHeight - 200;
+                const containerHeight = window.innerHeight - 280; // Augmenté pour laisser place au timer
                 
                 this.canvas.width = Math.min(containerWidth, 800);
                 this.canvas.height = Math.min(containerHeight, 400);
@@ -197,12 +233,32 @@
                 this.cycleDuration = 10000; // 10 secondes par cycle (5s montée + 5s descente)
                 this.lastTimestamp = 0;
                 this.offset = 0;
+                this.startTime = Date.now(); // Heure de démarrage pour le chronomètre
             }
             
             setupEventListeners() {
                 window.addEventListener('resize', () => {
                     this.setupCanvas();
                 });
+            }
+            
+            updateTimer() {
+                const elapsedTime = Date.now() - this.startTime;
+                const totalSeconds = Math.floor(elapsedTime / 1000);
+                const minutes = Math.floor(totalSeconds / 60);
+                const seconds = totalSeconds % 60;
+                
+                const timerText = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                this.timerElement.textContent = timerText;
+                
+                // Vérifier si on vient d'atteindre une minute pile
+                if (seconds === 0 && totalSeconds > 0) {
+                    this.timerElement.classList.add('minute-mark');
+                    // Retirer la classe après l'animation
+                    setTimeout(() => {
+                        this.timerElement.classList.remove('minute-mark');
+                    }, 1000);
+                }
             }
             
             drawAxes() {
@@ -303,6 +359,9 @@
                 // Vitesse ajustée pour un cycle complet (2π) en 10 secondes
                 this.offset += deltaTime * (2 * Math.PI / this.cycleDuration);
                 
+                // Mise à jour du chronomètre
+                this.updateTimer();
+                
                 // Nettoyage du canvas
                 this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
                 
@@ -322,4 +381,3 @@
     </script>
 </body>
 </html>
-
