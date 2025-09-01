@@ -117,7 +117,7 @@ Les contributions sont les bienvenues ! Pour proposer des améliorations :
 ## 💡 Améliorations possibles
 
 - [ ] Choix de durée de session (3, 5, 10 minutes)
-- [ ] Sons ou musique d'ambiance optionnels
+- [X] Sons ou musique d'ambiance optionnels
 - [ ] Différents thèmes visuels
 - [ ] Sauvegarde des statistiques de pratique
 - [ ] Mode sombre/clair
